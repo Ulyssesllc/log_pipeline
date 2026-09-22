@@ -29,4 +29,4 @@ Chạy kịch bản tự động duy nhất:
 * `test_main.py`: Bộ kiểm thử Unit Test cho các trường hợp biên.
 * `run_pipeline.sh`: Kịch bản điều khiển pipeline bằng Bash (Strict mode).
 * `pyproject.toml` & `requirements.txt`: Khai báo phụ thuộc và cấu hình linter/type checker.
-* `CLAUDE.md` / `AGENTS.md`: Hướng dẫn bối cảnh cho AI Agent.
+* `AGENTS.md`: Hướng dẫn bối cảnh cho AI Agent.
