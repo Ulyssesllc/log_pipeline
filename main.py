@@ -1,3 +1,4 @@
+import pandas as pd
 def read_log(file_path: str) -> list[str]:
     print(f"Reading log file from: {file_path}")
     return []
