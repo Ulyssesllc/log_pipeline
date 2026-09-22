@@ -10,3 +10,4 @@ def parse_log_line(line: str) -> dict[str, str]:
 
 if __name__ == "__main__":
    read_log("app.log")
+#Main pipeline script
