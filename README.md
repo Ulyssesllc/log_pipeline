@@ -1,4 +1,4 @@
-```
+
 # Log Processing Pipeline
 
 Hệ thống xử lý và thống kê file log tự động kết hợp giữa Shell Script an toàn và Pandas Vectorization.
