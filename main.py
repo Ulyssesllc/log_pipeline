@@ -11,37 +11,62 @@ def parse_log_line(line: str) -> dict[str, str]:
     if len(parts) < 4:
         raise ValueError("Định dạng dòng log không hợp lệ")
     return {
-        "date": parts,
-        "time": parts[15],
-        "level": parts[14],
-        "message": parts[16],
+        "date": parts[0],
+        "time": parts[1],
+        "level": parts[2],
+        "message": parts[3],
     }
 
 
 def validate_and_parse(line: str) -> dict[str, str]:
-    # 1. Kiểm tra đầu vào không rỗng bằng assert
-    assert len(line.strip()) > 0, "Dòng log rỗng!"
+    cleaned = line.strip()
+    if not cleaned:
+        raise ValueError("Dòng log rỗng!")
 
-    parts = line.strip().split(" ")
+    # n=3 để chỉ tách 3 khoảng trắng đầu tiên, phần còn lại giữ nguyên làm message
+    parts = cleaned.split(" ", maxsplit=3)
+    if len(parts) < 4:
+        raise ValueError(f"Dòng log không đúng cấu trúc 4 phần: {line.strip()}")
 
-    if len(parts) < 3:
-        raise ValueError(f"Dòng log không đúng cấu trúc 3 phần: {line}")
     return {
-            "date": parts[0],
-            "level": parts[1],
-            "message": " ".join(parts[2:]),
-           }
+        "date": parts[0],
+        "time": parts[1],
+        "level": parts[2],
+        "message": parts[3],
+    }
 
 
 def process_logs_vectorized(log_file: str) -> pd.DataFrame:
+    # đảm bảo đọc nguyên từng dòng vào 1 cột raw_line
     df = pd.read_csv(
         log_file,
-        sep=" ",
-        names=["date", "level", "message"],
+        header=None,
+        names=["raw_line"],
+        sep=r"\r?\n",
         engine="python",
+        skip_blank_lines=True,
     )
-    error_df = df.loc[df["level"].isin(["ERROR", "CRITICAL"])]
-    return error_df.groupby("level").size().reset_index(name="count")
+
+    # Tách chuỗi thành tối đa 4 cột
+    split_df = df["raw_line"].str.strip().str.split(" ", n=3, expand=True)
+
+    # Đảm bảo đủ 4 cột nếu file có dòng log bị thiếu dữ liệu
+    if split_df.shape[1] < 4:
+        for col_idx in range(split_df.shape[1], 4):
+            split_df[col_idx] = None
+
+    df[["date", "time", "level", "message"]] = split_df.iloc[:, :4]
+
+    # Lọc và thống kê lỗi
+    error_mask = df["level"].isin(["ERROR", "CRITICAL"])
+    summary = (
+        df.loc[error_mask]
+        .groupby("level", as_index=False)
+        .size()
+        .rename(columns={"size": "count"})
+    )
+
+    return summary
 
 
 if __name__ == "__main__":
@@ -55,5 +80,5 @@ if __name__ == "__main__":
         print(f"Lỗi xử lý: {err}")
 
     print("\n=== Thống kê toàn bộ file log ===")
-    summary = process_logs_vectorized("app.log")
-    print(summary)
+    summary_df: pd.DataFrame = process_logs_vectorized("app.log")
+    print(summary_df)
