@@ -33,6 +33,4 @@ Chạy kịch bản tự động duy nhất:
 
 ```
 
----
 
-```
