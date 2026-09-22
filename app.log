@@ -1,0 +1,7 @@
+2026-09-21 10:00:00 INFO System_started
+2026-09-21 10:01:15 ERROR Database_timeout
+2026-09-21 10:02:30 CRITICAL Out_of_memory
+2026-09-21 10:03:10 ERROR Connection_failed
+2026-09-21 10:04:05 INFO User_logged_in
+2026-09-21 10:05:22 ERROR Disk_full
+2026-09-21 10:06:00 CRITICAL Kernel_panic

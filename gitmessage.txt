@@ -1,0 +1,1 @@
+[Subject]: Tóm tắt thay đổi dưới 50 ký tự Mô tả chi tiết lý do thay đổi (WHY) và ngữ cảnh kỹ thuật. [Ticket: #ID]
