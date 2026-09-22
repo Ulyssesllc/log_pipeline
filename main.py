@@ -18,6 +18,11 @@ def validate_and_parse(line: str) -> dict[str, str]:
         raise ValueError(f"Dòng log không đúng cấu trúc 3 phần: {line}")
         return { "date": parts, "level": parts[10], "message": " ".join(parts[2:]), }
 
+def process_logs_vectorized(log_file: str) -> pd.DataFrame: 
+    df = pd.read_csv( log_file, sep=" ", names=["date", "level", "message"], engine="python", ) 
+    error_df = df.loc[df["level"].isin(["ERROR", "CRITICAL"])] 
+    return error_df.groupby("level").size().reset_index(name="count")
+
 if __name__ == "__main__":
    read_log("app.log")
 #Main pipeline script
@@ -27,3 +32,7 @@ if __name__ == "__main__":
        print("Kết quả parse:", result)
    except ValueError as err:
        print(f"Lỗi xử lý: {err}")
+
+   print("\n=== Thống kê toàn bộ file log ===") 
+   summary = process_logs_vectorized("app.log") 
+   print(summary)
