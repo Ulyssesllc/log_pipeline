@@ -31,6 +31,5 @@ Chạy kịch bản tự động duy nhất:
 * `run_pipeline.sh`: Kịch bản điều khiển pipeline bằng Bash (Strict mode).
 * `pyproject.toml` &amp; `requirements.txt`: Khai báo phụ thuộc và cấu hình linter/type checker. EOF
 
-```
 
 
