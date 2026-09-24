@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -8,7 +10,7 @@ def generate_error_chart(
     log_file: str = "app.log",
     output_image: str = "error_report.png",
 ) -> None:
-    summary_df = process_logs_vectorized(log_file)
+    summary_df = process_logs_vectorized(Path(log_file))
 
     if summary_df.empty:
         print("Không có dữ liệu lỗi để vẽ biểu đồ.")

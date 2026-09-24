@@ -1,0 +1,10 @@
+[
+    {
+        "level": "CRITICAL",
+        "count": 2
+    },
+    {
+        "level": "ERROR",
+        "count": 3
+    }
+]
