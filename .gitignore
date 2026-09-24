@@ -21,3 +21,9 @@ Thumbs.db
 
 # Secrets & Environment variables
 .env
+
+# Miscellaneous
+*.egg-info/
+my_reports/
+reports/
+final_reports/
