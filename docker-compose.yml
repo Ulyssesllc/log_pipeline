@@ -1,0 +1,7 @@
+services:
+  log-pipeline:
+    build: .
+    image: log_pipeline:v1
+    container_name: log_pipeline_app
+    volumes:
+      - .:/app
