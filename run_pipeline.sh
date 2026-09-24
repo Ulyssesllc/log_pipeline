@@ -29,6 +29,11 @@ python3 test_main.py
 echo "--> Running Main Pipeline..."
 python3 main.py
 
+# 5. Xuất biểu đồ trực quan hóa
+echo "--> Generating Error Chart..."
+python3 visualize.py
+
+
 echo "=========================================="
 echo " PIPELINE EXECUTED SUCCESSFULLY!"
 echo "=========================================="
