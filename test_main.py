@@ -3,10 +3,13 @@ from main import validate_and_parse
 
 def test_parse_valid_log() -> None:
     # Test case chuẩn (Typical case)
-    line = "2026-09-21 ERROR Database_timeout"
+    line = "2026-09-21 10:00:00 ERROR Database_timeout"
     result = validate_and_parse(line)
+    assert result["date"] == "2026-09-21"
+    assert result["time"] == "10:00:00"
     assert result["level"] == "ERROR"
     assert result["message"] == "Database_timeout"
+    print("test_parse_valid_log: PASSED")
 
 
 def test_parse_empty_line_raises_error() -> None:
