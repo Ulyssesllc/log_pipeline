@@ -1,14 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "log-pipeline"
 version = "0.1.0"
-description = "Automated Shell and Python Log Processing Pipeline"
+description = "Production-ready CLI Log Processing Pipeline"
+authors = [ { name = "Your Name", email = "your.email@example.com" } ]
 readme = "README.md"
-requires-python = ">=3.10"
-dependencies = [ "pandas>=2.0.0", ]
+requires-python = ">=3.12"
+dependencies = [ "pandas", "matplotlib", "seaborn", ]
 
-[tool.ruff.lint]
-select = ["E", "F", "I"]
+[project.scripts]
+log-pipeline = "main:main"
+
+[tool.setuptools]
+py-modules = ["main", "visualize"]
+
+[tool.setuptools.packages.find]
+exclude = ["reports*", "my_reports*", "tests*"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
 
 [tool.mypy]
 python_version = "3.12"
+strict = true
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["."]
