@@ -12,7 +12,7 @@ from main import (
 )
 
 
-def test_validate_and_parse_valid():
+def test_validate_and_parse_valid() -> None:
     line = "2026-09-21 10:00:00 ERROR Database_timeout"
     result = validate_and_parse(line)
     assert result["date"] == "2026-09-21"
@@ -21,31 +21,31 @@ def test_validate_and_parse_valid():
     assert result["message"] == "Database_timeout"
 
 
-def test_validate_and_parse_invalid_columns():
+def test_validate_and_parse_invalid_columns() -> None:
     invalid_line = "2026-09-21 ERROR"
     with pytest.raises(ValueError, match="Dòng log không đúng cấu trúc"):
         validate_and_parse(invalid_line)
 
 
-def test_stream_log_file(tmp_path: Path):
+def test_stream_log_file(tmp_path: Path) -> None:
     log_file = tmp_path / "stream.log"
     log_file.write_text("line1\n\nline2\n", encoding="utf-8")
     lines = list(stream_log_file(log_file))
     assert lines == ["line1", "line2"]
 
 
-def test_stream_log_file_not_found():
+def test_stream_log_file_not_found() -> None:
     with pytest.raises(FileNotFoundError):
         list(stream_log_file(Path("missing.log")))
 
 
-def test_process_logs_nonexistent_file():
+def test_process_logs_nonexistent_file() -> None:
     fake_path = Path("nonexistent_log_file.log")
     with pytest.raises(FileNotFoundError):
         process_logs_vectorized(fake_path)
 
 
-def test_process_logs_and_export(tmp_path: Path):
+def test_process_logs_and_export(tmp_path: Path) -> None:
     log_file = tmp_path / "test_app.log"
     log_content = (
         "2026-09-21 10:00:00 ERROR DB_Connection_Failed\n"
@@ -65,12 +65,12 @@ def test_process_logs_and_export(tmp_path: Path):
     assert (output_dir / "summary.json").exists()
 
 
-def test_setup_logging():
+def test_setup_logging() -> None:
     setup_logging(verbose=True)
     setup_logging(verbose=False)
 
 
-def test_main_cli_execution(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def test_main_cli_execution(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     log_file = tmp_path / "cli_app.log"
     log_file.write_text("2026-09-21 10:00:00 ERROR Test_Error\n", encoding="utf-8")
     output_dir = tmp_path / "cli_reports"
