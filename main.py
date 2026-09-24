@@ -1,12 +1,19 @@
+import argparse
+import json
+import logging
 from pathlib import Path
 from typing import Generator
 
 import pandas as pd
 
 
-def read_log(file_path: str) -> list[str]:
-    print(f"Reading log file from: {file_path}")
-    return []
+def setup_logging(verbose: bool = False) -> None:
+    level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
 
 def validate_and_parse(line: str) -> dict[str, str]:
@@ -27,76 +34,86 @@ def validate_and_parse(line: str) -> dict[str, str]:
     }
 
 
-def stream_log_file(log_file: str) -> Generator[str, None, None]:
-    file_path = Path(log_file)
-    if not file_path.exists():
-        print(f"Cảnh báo: File '{log_file}' không tồn tại.")
-        return
-
+def stream_log_file(log_file: Path) -> Generator[str, None, None]:
+    if not log_file.exists():
+        raise FileNotFoundError(f"Tệp log không tồn tại: {log_file}")
     with open(log_file, "r", encoding="utf-8") as file:
         for line in file:
             if line.strip():
                 yield line.strip()
 
 
-def process_logs_vectorized(log_file: str) -> pd.DataFrame:
-    file_path = Path(log_file)
-    if not file_path.exists():
-        return pd.DataFrame(columns=["level", "count"])
+def process_logs_vectorized(log_file: Path) -> pd.DataFrame:
+    if not log_file.exists():
+        raise FileNotFoundError(f"Tệp log không tồn tại: {log_file}")
 
-    # đảm bảo đọc nguyên từng dòng vào 1 cột raw_line
-    df = pd.read_csv(
+    df: pd.DataFrame = pd.read_csv(
         log_file,
         header=None,
         names=["raw_line"],
-        sep=r"\r?\n",
         engine="python",
-        skip_blank_lines=True,
     )
-
-    if df.empty:
-        return pd.DataFrame(columns=["level", "count"])
-
-    # Tách chuỗi thành tối đa 4 cột
-    split_df = df["raw_line"].str.strip().str.split(" ", n=3, expand=True)
-
-    # Đảm bảo đủ 4 cột nếu file có dòng log bị thiếu dữ liệu
-    if split_df.shape[1] < 4:
-        for col_idx in range(split_df.shape[1], 4):
-            split_df[col_idx] = None
-
-    df[["date", "time", "level", "message"]] = split_df.iloc[:, :4]
-
-    # Lọc và thống kê lỗi
-    error_mask = df["level"].isin(["ERROR", "CRITICAL"])
-    summary = (
-        df.loc[error_mask]
-        .groupby("level", as_index=False)
-        .size()
-        .rename(columns={"size": "count"})
-    )
-
+    split_df = df["raw_line"].str.split(" ", n=3, expand=True)
+    df[["date", "time", "level", "message"]] = split_df
+    error_df: pd.DataFrame = df.loc[df["level"].isin(["ERROR", "CRITICAL"])]
+    summary: pd.DataFrame = error_df.groupby("level").size().reset_index(name="count")
     return summary
 
 
-if __name__ == "__main__":
-    read_log("app.log")
-    # Main pipeline script
+def export_reports(summary_df: pd.DataFrame, output_dir: Path) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    csv_path = output_dir / "summary.csv"
+    json_path = output_dir / "summary.json"
+
+    summary_df.to_csv(csv_path, index=False)
+
+    summary_dict = summary_df.to_dict(orient="records")
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(summary_dict, f, indent=4, ensure_ascii=False)
+
+    logging.info(f"Đã xuất báo cáo CSV: {csv_path}")
+    logging.info(f"Đã xuất báo cáo JSON: {json_path}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Log Processing Pipelime CLI - Phân tích và thống kê log hệ thống"
+    )
+    parser.add_argument(
+        "-i",
+        "--input",
+        type=Path,
+        default=Path("app.log"),
+        help="Đường dẫn tới file log đầu vào (Mặc định: app.log)",
+    )
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Thư mục lưu báo cáo kết quả (Mặc định: reports),",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Hiển thị log chi tiết (Debug level)",
+    )
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    logging.info("Starting Log Processing Pipeline CLI...")
+    logging.debug(f"Input file: {args.input}, Output directory: {args.output_dir}")
+
     try:
-        sample = "2026-09-21 ERROR Database_timeout"
-        result = validate_and_parse(sample)
-        print("Kết quả parse:", result)
-    except ValueError as err:
-        print(f"Lỗi xử lý: {err}")
+        summary_df = process_logs_vectorized(args.input)
+        logging.info("Xử lí log hoàn tất thành công.")
+        export_reports(summary_df, args.output_dir)
+    except Exception as e:
+        logging.error(f"Lỗi khi xử lí pipeline: {e}")
+        raise SystemExit(1)
 
-    print("\n===Đọc thử 3 dòng đầu qua Generator===")
-    log_gen = stream_log_file("app.log")
-    for _ in range(3):
-        try:
-            print(next(log_gen))
-        except StopIteration:
-            break
 
-    print("\n=== Thống kê toàn bộ file log ===")
-    summary_df: pd.DataFrame = process_logs_vectorized("app.log")
-    print(summary_df)
+if __name__ == "__main__":
+    main()
