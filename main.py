@@ -1,10 +1,12 @@
 import argparse
 import json
 import logging
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 def setup_logging(verbose: bool = False) -> None:
@@ -72,8 +74,8 @@ def export_reports(summary_df: pd.DataFrame, output_dir: Path) -> None:
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(summary_dict, f, indent=4, ensure_ascii=False)
 
-    logging.info(f"Đã xuất báo cáo CSV: {csv_path}")
-    logging.info(f"Đã xuất báo cáo JSON: {json_path}")
+    logger.info(f"Đã xuất báo cáo CSV: {csv_path}")
+    logger.info(f"Đã xuất báo cáo JSON: {json_path}")
 
 
 def main() -> None:
@@ -103,15 +105,15 @@ def main() -> None:
     args = parser.parse_args()
     setup_logging(args.verbose)
 
-    logging.info("Starting Log Processing Pipeline CLI...")
-    logging.debug(f"Input file: {args.input}, Output directory: {args.output_dir}")
+    logger.info("Starting Log Processing Pipeline CLI...")
+    logger.debug(f"Input file: {args.input}, Output directory: {args.output_dir}")
 
     try:
         summary_df = process_logs_vectorized(args.input)
-        logging.info("Xử lí log hoàn tất thành công.")
+        logger.info("Xử lí log hoàn tất thành công.")
         export_reports(summary_df, args.output_dir)
-    except Exception as e:
-        logging.error(f"Lỗi khi xử lí pipeline: {e}")
+    except (FileNotFoundError, OSError, ValueError) as e:
+        logger.error(f"Lỗi khi xử lí pipeline: {e}")
         raise SystemExit(1)
 
 
