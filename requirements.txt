@@ -10,7 +10,7 @@ identify==2.6.19
 iniconfig==2.3.0
 kiwisolver==1.5.1
 librt==0.15.0
--e git+https://github.com/Ulyssesllc/log_pipeline.git@5c046033e5057ccdfbb7ae8d6d4061baa8bd6170#egg=log_pipeline
+-e .
 matplotlib==3.11.2
 mypy==2.3.1
 mypy_extensions==1.1.0
